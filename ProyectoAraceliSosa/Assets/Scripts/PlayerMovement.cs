@@ -4,71 +4,103 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 { 
+    // Referencia al componente Rigidbody2D del jugador.
     Rigidbody2D rb;
-    private BoxCollider2D coll;
-    private Animator anim;
-    [SerializeField] private LayerMask jumpableGround;
+    // Referencia al componente BoxCollider2D del jugador.
+    private BoxCollider2D coll;  
+    // Referencia al componente Animator del jugador.
+    private Animator anim;  
 
-    private SpriteRenderer sprite;
+    // Máscara de capa que determina qué se considera suelo.
+    [SerializeField] private LayerMask jumpableGround;  
+    // Referencia al componente SpriteRenderer del jugador.
+    private SpriteRenderer sprite;  
 
+    // Dirección horizontal del jugador.
     private float dirX = 0f;  
-    [SerializeField] private float moveSpeed = 7f;
-    [SerializeField] private float jumpForce = 14f;
 
-    private enum MovementState {idle, running, jumping, falling}
+    // Velocidad de movimiento horizontal del jugador.
+    [SerializeField] private float moveSpeed = 7f;  
+    // Fuerza de salto del jugador.
+    [SerializeField] private float jumpForce = 14f;  
+
+    // Enumeración que representa los estados de movimiento del jugador.
+    private enum MovementState {idle, running, jumping, falling}  
 
     [SerializeField] private AudioSource jumpSoundEffect;
 
     void Start()
     {
-        rb =  GetComponent<Rigidbody2D>();
-        coll = GetComponent<BoxCollider2D>();
-        sprite = GetComponent<SpriteRenderer>();
-        anim = GetComponent<Animator>();
+        // Obtiene el componente Rigidbody2D del jugador.
+        rb =  GetComponent<Rigidbody2D>();  
+        // Obtiene el componente BoxCollider2D del jugador.
+        coll = GetComponent<BoxCollider2D>();  
+        // Obtiene el componente SpriteRenderer del jugador.
+        sprite = GetComponent<SpriteRenderer>();  
+        // Obtiene el componente Animator del jugador.
+        anim = GetComponent<Animator>();  
     }
 
-    // Update is called once per frame
     void Update()
-    {
-        dirX= Input.GetAxisRaw("Horizontal");
-        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);
+    { 
+        // Lee la entrada del teclado o control para obtener la dirección horizontal.
+        dirX = Input.GetAxisRaw("Horizontal"); 
+        // Actualiza la velocidad del jugador en el eje X.
+        rb.velocity = new Vector2(dirX * moveSpeed, rb.velocity.y);  
 
-        if(Input.GetButtonDown("Jump") && IsGrounded())
+        // Comprueba si se presionó el botón de salto y si el jugador está en el suelo.
+        if (Input.GetButtonDown("Jump") && IsGrounded())  
         {
-            jumpSoundEffect.Play();
-           rb.velocity = new Vector2(rb.velocity.x,jumpForce );
+            jumpSoundEffect.Play();  
+            // Aplica una fuerza vertical para que el jugador salte.
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);  
         }
-
-        UpdateAnimationState();
-       
+         // Actualiza el estado de la animación del jugador.
+        UpdateAnimationState();  
     }
 
-    private void UpdateAnimationState(){
+    private void UpdateAnimationState()
+    {
         MovementState state;
-        if(dirX > 0f)
+
+        if (dirX > 0f)
         {
-        state = MovementState.running;
-        sprite.flipX = false;
+            // El jugador se está moviendo hacia la derecha.
+            state = MovementState.running;  
+            // Voltea el sprite del jugador en la dirección correcta.
+            sprite.flipX = false;  
         }
-        else if(dirX < 0f)
+        else if (dirX < 0f)
         {
-        state = MovementState.running;
-        sprite.flipX = true;
+            // El jugador se está moviendo hacia la izquierda.
+            state = MovementState.running;  
+            // Voltea el sprite del jugador en la dirección correcta.
+            sprite.flipX = true;  
         }
         else
         {
-         state = MovementState.idle;
+            state = MovementState.idle; 
         }
-        if(rb.velocity.y > .1f){
-            state = MovementState.jumping;
-        }
-        else if (rb.velocity.y < -.1f){
-            state = MovementState.falling;
 
+        if (rb.velocity.y > 0.1f)
+        {
+            // El jugador está saltando.
+            state = MovementState.jumping;  
         }
-        anim.SetInteger("state", (int)state);
+        else if (rb.velocity.y < -0.1f)
+        {
+            // El jugador está cayendo.
+            state = MovementState.falling;  
+        }
+        // Establece el estado de la animación en función del estado de movimiento.
+        anim.SetInteger("state", (int)state);  
     }
-    private bool IsGrounded(){
-       return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, .1f, jumpableGround );
+
+    // Inicio del método para comprobar si el jugador está en el suelo.
+    private bool IsGrounded()
+    {
+        // Realiza una detección de colisión en la parte inferior del jugador para verificar si está en el suelo.
+        return Physics2D.BoxCast(coll.bounds.center, coll.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
     }
 }
+
